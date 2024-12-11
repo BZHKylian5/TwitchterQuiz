@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # Service PHP avec Apache
   php:
@@ -13,47 +11,49 @@ services:
     ports:
       - "8080:80"
     depends_on:
-      - db 
+      - db
     environment:
-      MYSQL_HOST: db  
+      MYSQL_HOST: db
       MYSQL_USER: bzhkylian
       MYSQL_PASSWORD: pourquoi
       MYSQL_DATABASE: mydb
 
   # Service MariaDB
   db:
-    image: mariadb:10.11  
+    image: mariadb:10.11
     container_name: mariadb_container
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword  # Mot de passe pour l'utilisateur root
-      MYSQL_DATABASE: mydb  # Base de données par défaut
-      MYSQL_USER: bzhkylian  # Utilisateur pour se connecter à la DB
-      MYSQL_PASSWORD: pourquoi  # Mot de passe pour l'utilisateur
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: bzhkylian
+      MYSQL_PASSWORD: pourquoi
     volumes:
-      - db_data:/var/lib/mysql 
+      - db_data:/var/lib/mysql
 
-  # Service PHPMyAdmin pour gérer la base de données
+  # Service PHPMyAdmin
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
     container_name: phpmyadmin_container
     depends_on:
-      - db  
+      - db
     ports:
-      - "8081:80"  
+      - "8081:80"
     environment:
-      PMA_HOST: db  
-      MYSQL_ROOT_PASSWORD: rootpassword  
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: rootpassword
+    volumes:
+      - ./ConfigPHPMyAdmin/config.user.inc.php:/etc/phpmyadmin/config.user.inc.php
 
-  # Service Node.js pour le bot Twitch
+  # Service Node.js
   node:
     build:
-      context: 
-      dockerfile: Dockerfile.
+      context: .  # Spécifier le répertoire de construction pour Node.js
+      dockerfile: Dockerfile  # Assurez-vous que le Dockerfile existe dans ./scriptsNode
     container_name: node_container
     volumes:
       - ./scriptsNode:/usr/local/bin/scriptsNode/
       - ./scriptsNode/.SECURE:/usr/local/bin/scriptsNode/.SECURE/
-    entrypoint: ["yarn start", "/usr/local/bin/scriptsNode/botTwitch.js"]  
+    entrypoint: ["yarn", "start", "/usr/local/bin/scriptsNode/botTwitch.js"]
 
 volumes:
   db_data:
