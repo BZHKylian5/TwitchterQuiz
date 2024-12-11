@@ -1,0 +1,59 @@
+version: "3.8"
+
+services:
+  # Service PHP avec Apache
+  php:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Assurez-vous que le Dockerfile est correctement configuré pour PHP
+    container_name: php_container
+    volumes:
+      - ./site/html:/var/www/html
+      - ./site/.SECURE:/var/www/.SECURE
+    ports:
+      - "8080:80"
+    depends_on:
+      - db 
+    environment:
+      MYSQL_HOST: db  
+      MYSQL_USER: bzhkylian
+      MYSQL_PASSWORD: pourquoi
+      MYSQL_DATABASE: mydb
+
+  # Service MariaDB
+  db:
+    image: mariadb:10.11  
+    container_name: mariadb_container
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword  # Mot de passe pour l'utilisateur root
+      MYSQL_DATABASE: mydb  # Base de données par défaut
+      MYSQL_USER: bzhkylian  # Utilisateur pour se connecter à la DB
+      MYSQL_PASSWORD: pourquoi  # Mot de passe pour l'utilisateur
+    volumes:
+      - db_data:/var/lib/mysql 
+
+  # Service PHPMyAdmin pour gérer la base de données
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin_container
+    depends_on:
+      - db  
+    ports:
+      - "8081:80"  
+    environment:
+      PMA_HOST: db  
+      MYSQL_ROOT_PASSWORD: rootpassword  
+
+  # Service Node.js pour le bot Twitch
+  node:
+    build:
+      context: 
+      dockerfile: Dockerfile.
+    container_name: node_container
+    volumes:
+      - ./scriptsNode:/usr/local/bin/scriptsNode/
+      - ./scriptsNode/.SECURE:/usr/local/bin/scriptsNode/.SECURE/
+    entrypoint: ["yarn start", "/usr/local/bin/scriptsNode/botTwitch.js"]  
+
+volumes:
+  db_data:
