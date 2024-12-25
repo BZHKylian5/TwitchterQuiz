@@ -1,17 +1,6 @@
 <?php
 // Configuration de la base de données
 require_once("./.SECURE/config.php");
-    
-// Création de la connexion PDO
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
-        PDO::ATTR_EMULATE_PREPARES   => false,
-    ]);
-} catch (\PDOException $e) {
-    die('Erreur de connexion à la base de données : ' . $e->getMessage());
-}
 
 // Récupération des données envoyées par le bot
 $data = json_decode(file_get_contents('php://input'), true);
@@ -25,7 +14,7 @@ if (isset($data['username']) && isset($data['message']) && isset($data['user_id'
     try {
         // Vérifier si l'utilisateur existe dans la table user_twitch
         $sql = "SELECT username FROM user_twitch WHERE user_id = :user_id";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $conn->prepare($sql);
         $stmt->execute(['user_id' => $user_id]);
         $result = $stmt->fetch();
 
@@ -34,19 +23,19 @@ if (isset($data['username']) && isset($data['message']) && isset($data['user_id'
             if ($result['username'] !== $username) {
                 // Mettre à jour le pseudo
                 $sql = "UPDATE user_twitch SET username = :username WHERE user_id = :user_id";
-                $stmt = $pdo->prepare($sql);
+                $stmt = $conn->prepare($sql);
                 $stmt->execute(['username' => $username, 'user_id' => $user_id]);
             }
         } else {
             // Utilisateur n'existe pas, l'insérer
             $sql = "INSERT INTO user_twitch (user_id, username) VALUES (:user_id, :username)";
-            $stmt = $pdo->prepare($sql);
+            $stmt = $conn->prepare($sql);
             $stmt->execute(['user_id' => $user_id, 'username' => $username]);
         }
 
         // Insérer le message dans la table messages
         $sql = "INSERT INTO messages (username, message, user_id) VALUES (:username, :message, :user_id)";
-        $stmt = $pdo->prepare($sql);
+        $stmt = $conn->prepare($sql);
         $stmt->execute(['username' => $username, 'message' => $message, 'user_id' => $user_id]);
 
         echo json_encode(['status' => 'success']);

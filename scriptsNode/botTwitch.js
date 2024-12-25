@@ -102,6 +102,10 @@ client.on('message', async (channel, userstate, message, self) => {
             }
         }
 
+        if(message.toLowerCase() !== '!supprimer' && message.toLowerCase() !== '!participer' && participantData.findIndex(user => user.userId === userstate['user-id'])){
+            
+        }
+
     } catch (error) {
         console.error('Erreur lors de l\'envoi des données ou de la suppression du message :', error.response ? error.response.data : error.message);
     }

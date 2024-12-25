@@ -12,7 +12,7 @@ try {
 
 // Récupérer la liste des utilisateurs ayant donné leur consentement
 $sql = "SELECT username, user_id FROM user_twitch WHERE consent = 1";
-$stmt = $pdo->prepare($sql);
+$stmt = $conn->prepare($sql);
 $stmt->execute();
 
 // Récupérer tous les résultats sous forme de tableau

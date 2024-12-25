@@ -1,15 +1,6 @@
 <?php
 require_once("../../.SECURE/config.php");
 
-// Connexion à la base de données
-try {
-    $pdo = new PDO("mysql:host=$host;dbname=$db", $user, $pass);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo 'Connexion échouée : ' . $e->getMessage();
-    exit;
-}
-
 // Récupérer les données POST
 $data = json_decode(file_get_contents('php://input'), true);
 
@@ -20,15 +11,12 @@ if (isset($data['username']) && isset($data['user_id']) && isset($data['consent'
     $consent = $data['consent'];
 
     // Insérer ou mettre à jour le consentement dans la table user_twitch
-    $sql = "INSERT INTO user_twitch (username, user_id, consent) VALUES (:username, :user_id, :consent)
-            ON DUPLICATE KEY UPDATE consent = :consent";
+    $sql = "INSERT INTO user_twitch (username, user_id, consent) VALUES (?, ?, ?)
+            ON DUPLICATE KEY UPDATE consent = ?";
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':username', $username);
-    $stmt->bindParam(':user_id', $user_id);
-    $stmt->bindParam(':consent', $consent);
+    $stmt = $conn->prepare($sql);
     
-    if ($stmt->execute()) {
+    if ($stmt->execute([$username, $user_id, $consent, $consent])) {
         echo json_encode(['status' => 'success', 'message' => 'Consentement enregistré']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Erreur lors de l\'enregistrement']);

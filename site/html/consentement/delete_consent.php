@@ -18,12 +18,11 @@ if (isset($data['user_id'])) {
     $user_id = $data['user_id'];
 
     // Supprimer les données de consentement dans la base de données
-    $sql = "DELETE FROM user_twitch WHERE user_id = :user_id";
+    $sql = "DELETE FROM user_twitch WHERE user_id = ?";
 
-    $stmt = $pdo->prepare($sql);
-    $stmt->bindParam(':user_id', $user_id);
+    $stmt = $conn->prepare($sql);
     
-    if ($stmt->execute()) {
+    if ($stmt->execute([$user_id])) {
         echo json_encode(['status' => 'success', 'message' => 'Consentement supprimé']);
     } else {
         echo json_encode(['status' => 'error', 'message' => 'Erreur lors de la suppression']);
