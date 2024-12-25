@@ -1,12 +1,7 @@
 <?php
 // Configuration de la base de données
-include_once 'Secure/config.php'; 
-
-$host = 'db'; // Remplacez par l'hôte de votre base de données
-$db   = 'mydb'; // Remplacez par le nom de votre base de données
-$user = 'bzhkylian'; // Remplacez par votre nom d'utilisateur de base de données
-$pass = 'pourquoi'; // Remplacez par votre mot de passe de base de données
-
+require_once("./.SECURE/config.php");
+    
 // Création de la connexion PDO
 try {
     $pdo = new PDO("mysql:host=$host;dbname=$db;charset=utf8mb4", $user, $pass, [
