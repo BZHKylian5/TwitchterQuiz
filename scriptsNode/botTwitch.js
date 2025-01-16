@@ -30,7 +30,7 @@ client.on('connected', () => {
 async function getUserList() {
     try {
         const response = await axios.get('http://localhost/consentement/list_consent.php');
-        return response.data; // Supposons que la réponse est un tableau des utilisateurs
+        return response.data.data; // Supposons que la réponse est un tableau des utilisateurs
     } catch (error) {
         console.error('Erreur lors de la récupération de la liste des utilisateurs :', error.message);
         return [];
@@ -44,20 +44,25 @@ client.on('message', async (channel, userstate, message, self) => {
     try {
         // Vérification que le message n'est pas une commande système
         if (message.toLowerCase() !== '!participer' && message.toLowerCase() !== '!supprimer') {
+            // Récupérer la liste des utilisateurs
             const userList = await getUserList();
-            const isUserInList = userList.some(user => user.userId === userstate['user-id']);
-            
+
+            // Vérifier si l'utilisateur est dans la liste
+            const isUserInList = userList.some(user => user.user_id === userstate['user-id']);
+
+            // Si l'utilisateur est dans la liste, et que le message n'est pas une commande système
             if (isUserInList) {
+
+                // Envoi des données au serveur (vous pouvez ajouter d'autres conditions ici si nécessaire)
                 const now = new Date();
                 const timestamp = now.toISOString();
 
-                await axios.post('http://localhost/receive_data.php', {
+                const response = await axios.post('http://localhost/receive_data.php', {
                     username: userstate.username,
                     message: message.toUpperCase(),
                     timestamp: timestamp,
                     user_id: userstate['user-id'],
                 });
-
                 client.say(channel, `${userstate.username}, votre message a été enregistré !`);
             }
         }
@@ -100,10 +105,6 @@ client.on('message', async (channel, userstate, message, self) => {
             } else {
                 client.say(channel, `${userstate.username}, aucune donnée trouvée à supprimer.`);
             }
-        }
-
-        if(message.toLowerCase() !== '!supprimer' && message.toLowerCase() !== '!participer' && participantData.findIndex(user => user.userId === userstate['user-id'])){
-            
         }
 
     } catch (error) {

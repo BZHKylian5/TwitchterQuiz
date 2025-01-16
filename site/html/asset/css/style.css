@@ -1,0 +1,27 @@
+/** Variable Utile pour eviter de changer a chaque fois les couleur ou valeur **/
+:root{
+    --violet-fond : #A900EB;
+
+}
+
+body{
+    margin:0
+
+}
+
+
+/** CSS du HEADER **/
+header{
+    display: flex;
+    justify-content: space-between;
+    background-color: var(--violet-fond);
+    padding: 1em;
+}
+header img{
+    width: 15%;
+}
+
+#profilPicture {
+    display: flex;
+    justify-content: flex-end;
+}

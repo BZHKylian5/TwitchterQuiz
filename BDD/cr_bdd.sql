@@ -5,9 +5,12 @@ USE mydb;
 -- Table pour stocker les informations sur les images
 CREATE TABLE picture (
     idPicture INT AUTO_INCREMENT PRIMARY KEY,
-    url VARCHAR(255) NOT NULL,
+    url VARCHAR(255) DEFAULT 'asset/img/imageProfil/default.svg' NOT NULL,
     titre VARCHAR(255) NOT NULL
 );
+
+INSERT INTO picture (titre) VALUES ('image par default de l\'image de profil'); -- Ajuste les colonnes et valeurs selon ta structure
+
 
 -- Table pour stocker les utilisateurs
 CREATE TABLE user (
@@ -59,10 +62,10 @@ CREATE TABLE question (
 CREATE TABLE reponse (
     idr INT AUTO_INCREMENT PRIMARY KEY,
     idq INT NOT NULL,
-    idu INT NOT NULL,
+    idu VARCHAR(255) NOT NULL,
     reponse VARCHAR(255) NOT NULL,
-    CONSTRAINT question_fk_reponse FOREIGN KEY (idq) REFERENCES question(id) on delete CASCADE,
-    CONSTRAINT userTwitch_fk_reponse FOREIGN KEY (idu) REFERENCES user_twitch(user_id) on delete CASCADE
+    CONSTRAINT question_fk_reponse FOREIGN KEY (idq) REFERENCES question(id) ON DELETE CASCADE,
+    CONSTRAINT userTwitch_fk_reponse FOREIGN KEY (idu) REFERENCES user_twitch(user_id) ON DELETE CASCADE
 );
 
 -- Table pour les réponses correctes
@@ -70,25 +73,50 @@ CREATE TABLE reponseCorrect (
     id INT AUTO_INCREMENT PRIMARY KEY,
     idq INT NOT NULL,
     idr INT NOT NULL,
-    idu INT NOT NULL,
+    idu VARCHAR(255) NOT NULL,
     reponse VARCHAR(255) NOT NULL,
-    CONSTRAINT reponseCorrect_fk_question FOREIGN KEY (idq) REFERENCES question(id) on delete cascade,
-    CONSTRAINT reponseCorrect_fk_reponse FOREIGN KEY (idr) REFERENCES reponse(idr) on delete cascade,
-    CONSTRAINT userTwitch_fk_reponseCorrect FOREIGN KEY (idu) REFERENCES user_twitch(user_id) on delete CASCADE
+    CONSTRAINT reponseCorrect_fk_question FOREIGN KEY (idq) REFERENCES question(id) ON DELETE CASCADE,
+    CONSTRAINT reponseCorrect_fk_reponse FOREIGN KEY (idr) REFERENCES reponse(idr) ON DELETE CASCADE,
+    CONSTRAINT userTwitch_fk_reponseCorrect FOREIGN KEY (idu) REFERENCES user_twitch(user_id) ON DELETE CASCADE
 );
 
-CREATE VIEW question{
-    SELECT *,
-        STRING_AGG(DISTINCT JSONB_BUILD_OBJECT(
-        'idReponse', rc.id,
-        'reponse', rc.reponse,
-    )::TEXT, ';')
-    
-    FROM question q
-    JOIN reponse r on q.idq = r.idq
-    JOIN reponseCorrect rc on q.idq = rc.idq
+CREATE VIEW question_reponses AS
+SELECT 
+    q.id AS question_id,
+    q.question AS question_text,
+    CONCAT('[', GROUP_CONCAT(
+        DISTINCT JSON_OBJECT(
+            'idReponse', r.idr,
+            'reponse', r.reponse
+        )
+    ), ']') AS reponses,
+    CONCAT('[', GROUP_CONCAT(
+        DISTINCT JSON_OBJECT(
+            'idReponseCorrecte', rc.id,
+            'reponseCorrecte', rc.reponse
+        )
+    ), ']') AS reponses_correctes
+FROM 
+    question q
+LEFT JOIN 
+    reponse r ON q.id = r.idq
+LEFT JOIN 
+    reponseCorrect rc ON q.id = rc.idq
+GROUP BY 
+    q.id, q.question;
 
-}
+
+CREATE VIEW viewuser AS
+SELECT 
+    u.*,
+    p.idpicture as picture,
+    p.url,
+    p.titre
+FROM 
+    user u
+LEFT JOIN
+    picture p on p.idPicture = u.idPicture;
+
 
 /* Peuplement BDD */
 
