@@ -1,36 +1,35 @@
-import tmi from 'tmi.js';
-import axios from 'axios';
-import { CONST_CLIENT_ID, CONST_OAUTH_TOKEN, CONST_BROADCASTER_ID } from './.SECURE/config.js';
+const tmi = require('tmi.js');
 
-// Stockage temporaire des participants
-const participantData = [];
+const tmi = require('axios');
+
+import { CONST_CLIENT_ID, CONST_OAUTH_TOKEN, CONST_BROADCASTER_ID } from './.SECURE/config.js';
 
 // Configuration du client Twitch
 const client = new tmi.Client({
     options: { debug: true },
     connection: {
-        reconnect: true,   // Reconnecter automatiquement en cas de déconnexion
-        secure: true       // Utiliser une connexion sécurisée
+        reconnect: true,
+        secure: true,
     },
     identity: {
         username: 'BZHKylian',
-        password: 'oauth:' + CONST_OAUTH_TOKEN
+        password: 'oauth:' + CONST_OAUTH_TOKEN,
     },
     channels: ['bzhkylian'],
 });
 
 client.connect().catch(console.error);
 
-// Envoi d'un message après la connexion
+// Message après connexion
 client.on('connected', () => {
-    client.say('#bzhkylian', 'Bonjour tout le monde ! Pour participer, envoyez 👉   !participer   🎉 dans le chat. En envoyant cette commande, vous acceptez que vos données (pseudo, ID Twitch, réponse) soient utilisées uniquement pour ce live interactif. Ces données seront supprimées à la fin du live. ❌ Vous pouvez demander à retirer vos données à tout moment en envoyant 👉   !supprimer  .🗑️');
+    client.say('#bzhkylian', `Bonjour tout le monde ! Pour participer, envoyez 👉 !participer 🎉 dans le chat. En envoyant cette commande, vous acceptez que vos données soient utilisées pour ce live interactif.`);
 });
 
-// Fonction pour récupérer la liste des utilisateurs depuis list_content.php
+// Récupérer la liste des utilisateurs
 async function getUserList() {
     try {
         const response = await axios.get('http://localhost/consentement/list_consent.php');
-        return response.data.data; // Supposons que la réponse est un tableau des utilisateurs
+        return response.data.data || [];
     } catch (error) {
         console.error('Erreur lors de la récupération de la liste des utilisateurs :', error.message);
         return [];
@@ -39,75 +38,57 @@ async function getUserList() {
 
 // Gestion des messages
 client.on('message', async (channel, userstate, message, self) => {
-    if (self) return; // Ignore les messages du bot lui-même
+    if (self) return; // Ignore les messages du bot
 
     try {
-        // Vérification que le message n'est pas une commande système
-        if (message.toLowerCase() !== '!participer' && message.toLowerCase() !== '!supprimer') {
-            // Récupérer la liste des utilisateurs
-            const userList = await getUserList();
+        const userList = await getUserList();
+        const userId = userstate['user-id'];
+        const isUserInList = userList.some(user => user.user_id === userId);
 
-            // Vérifier si l'utilisateur est dans la liste
-            const isUserInList = userList.some(user => user.user_id === userstate['user-id']);
-
-            // Si l'utilisateur est dans la liste, et que le message n'est pas une commande système
-            if (isUserInList) {
-
-                // Envoi des données au serveur (vous pouvez ajouter d'autres conditions ici si nécessaire)
-                const now = new Date();
-                const timestamp = now.toISOString();
-
-                const response = await axios.post('http://localhost/receive_data.php', {
-                    username: userstate.username,
-                    message: message.toUpperCase(),
-                    timestamp: timestamp,
-                    user_id: userstate['user-id'],
-                });
-                client.say(channel, `${userstate.username}, votre message a été enregistré !`);
-            }
-        }
-
-        // Gestion de la commande !participer
+        // Commande : !participer
         if (message.toLowerCase() === '!participer') {
-            // Vérifie si l'utilisateur n'est pas déjà dans la liste
-            const alreadyExists = participantData.some(user => user.userId === userstate['user-id']);
-            if (!alreadyExists) {
-                participantData.push({
-                    username: userstate.username,
-                    userId: userstate['user-id'],
-                    consent: true,
-                });
-
-                // Envoi des données de consentement au script PHP
+            if (!isUserInList) {
                 await axios.post('http://localhost/consentement/receive_consent.php', {
                     username: userstate.username,
-                    user_id: userstate['user-id'],
+                    user_id: userId,
                     consent: true,
                 });
-
                 client.say(channel, `${userstate.username}, votre participation est enregistrée !`);
             } else {
                 client.say(channel, `${userstate.username}, vous êtes déjà inscrit !`);
             }
+            return;
         }
 
-        // Gestion de la commande !supprimer
+        // Commande : !supprimer
         if (message.toLowerCase() === '!supprimer') {
-            const index = participantData.findIndex(user => user.userId === userstate['user-id']);
-            if (index !== -1) {
-                participantData.splice(index, 1); // Supprime l'utilisateur
-                client.say(channel, `${userstate.username}, vos données ont été supprimées.`);
-                
-                // Supprime les données dans la base de données via PHP (facultatif)
+            if (isUserInList) {
                 await axios.post('http://localhost/consentement/delete_consent.php', {
-                    user_id: userstate['user-id'],
+                    user_id: userId,
                 });
+                client.say(channel, `${userstate.username}, vos données ont été supprimées.`);
             } else {
                 client.say(channel, `${userstate.username}, aucune donnée trouvée à supprimer.`);
             }
+            return;
         }
 
+        // Messages classiques (non commandes)
+        if (isUserInList) {
+            const now = new Date();
+            const timestamp = now.toISOString();
+
+            await axios.post('http://localhost/receive_data.php', {
+                username: userstate.username,
+                message: message.toUpperCase(),
+                timestamp,
+                user_id: userId,
+            });
+
+            client.say(channel, `${userstate.username}, votre message a été enregistré !`);
+        }
     } catch (error) {
-        console.error('Erreur lors de l\'envoi des données ou de la suppression du message :', error.response ? error.response.data : error.message);
+        console.error('Erreur lors de la gestion du message :', error.message);
+        client.say(channel, `Une erreur s'est produite. Veuillez réessayer.`);
     }
 });
