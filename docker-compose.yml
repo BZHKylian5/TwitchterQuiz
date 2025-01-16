@@ -51,10 +51,9 @@ services:
       dockerfile: Dockerfile 
     container_name: node_container
     volumes:
-      - ./scriptsNode:/usr/local/bin/scriptsNode/
-      - ./scriptsNode/.SECURE:/usr/local/bin/scriptsNode/.SECURE/
-      - ./scriptNode/botTwitch.js:/usr/local/bin/scriptNode/botTwitch.js
-    entrypoint: ["yarn", "start", "/usr/local/bin/scriptsNode/botTwitch.js"]
+      - ./scriptsNode:/usr/local/bin/scriptNode/
+      - ./scriptsNode/.SECURE:/usr/local/bin/scriptNode/.SECURE/
+    entrypoint: ["yarn", "start", "/usr/local/bin/scriptNode/botTwitch.js"]
 
 volumes:
   db_data:
