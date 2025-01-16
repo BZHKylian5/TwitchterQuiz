@@ -1,6 +1,5 @@
-const tmi = require('tmi.js');
-
-const tmi = require('axios');
+import tmi from 'tmi.js';
+import axios from 'axios'; // Import axios here
 
 import { CONST_CLIENT_ID, CONST_OAUTH_TOKEN, CONST_BROADCASTER_ID } from './.SECURE/config.js';
 

@@ -53,6 +53,7 @@ services:
     volumes:
       - ./scriptsNode:/usr/local/bin/scriptsNode/
       - ./scriptsNode/.SECURE:/usr/local/bin/scriptsNode/.SECURE/
+      - ./scriptNode/botTwitch.js:/usr/local/bin/scriptNode/botTwitch.js
     entrypoint: ["yarn", "start", "/usr/local/bin/scriptsNode/botTwitch.js"]
 
 volumes:
