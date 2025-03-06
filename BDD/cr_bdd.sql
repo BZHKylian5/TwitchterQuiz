@@ -9,6 +9,15 @@ CREATE TABLE picture (
     titre VARCHAR(255) NOT NULL
 );
 
+CREATE TABLE categorie_picture (
+    idPicture INT,
+    idCateg INT,
+
+    CONSTRAINT categpicture_pk PRIMARY KEY (idPicture, idCateg),
+    CONSTRAINT picture_fk_categoriepicture FOREIGN KEY (idPicture) REFERENCES picture(idPicture),
+    CONSTRAINT categorie_fk_categoriepicture FOREIGN KEY (idCateg) REFERENCES categorie(id)
+);
+
 INSERT INTO picture (titre) VALUES ('image par default de l\'image de profil'); -- Ajuste les colonnes et valeurs selon ta structure
 
 

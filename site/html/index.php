@@ -1,43 +1,43 @@
 <?php
 require_once "config.php";
 
-if(!$isLoggedIn){
+if (!$isLoggedIn) {
     header("location: /login/");
 }
 
 $stmt = $conn->prepare("SELECT * FROM viewuser WHERE id = ?");
-$stmt -> execute([$idUser]);
-$result = $stmt -> fetch(PDO::FETCH_ASSOC);
+$stmt->execute([$idUser]);
+$result = $stmt->fetch(PDO::FETCH_ASSOC);
 ?>
 
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Accueil</title>
     <link rel="stylesheet" href="./asset/css/style.css">
 </head>
+
 <body>
-    <header>
-        <a href="/"><img id="logoSite" src="./asset/img/logo.png" alt="logo site" title="logo du site"></a>
-        <?php if(!$isLoggedIn){
-        ?>
-            <div>
-                <a href="/login/">Connexion</a>
-            </div>
-        <?php
-        }else{
-        ?>
-            <div id="profilPicture">
-                <img src="<?=$result['url']?>" title="<?=$result['titre']?>" alt="<?=$result['titre']?>">
-            </div>
-        <?php
-        }?>
-    </header>
+    <?php require_once "componant/header.php"; ?>
     <main>
-        
+        <section class="navBtn">
+            <a href="/createQuestion/">
+                <div class="btnCreate">
+                    Créer des Questions
+                </div>
+            </a>
+            <a href="/createQuestion/">
+                <div class="btnCreate">
+                    Modifier des Questions
+                </div>
+            </a>
+
+        </section>
     </main>
 </body>
+
 </html>

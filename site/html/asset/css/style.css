@@ -1,12 +1,31 @@
+/** Police pour le site **/
+@font-face {
+    font-family: 'horeliosmedium';
+    src: url('/asset/police/horelios/horelios_medium-webfont.woff2') format('woff2'),
+         url('/asset/police/horelios/horelios_medium-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'astonpolizregular';
+    src: url('/asset/police/astonpoliz/astonpoliz-webfont.woff2') format('woff2'),
+         url('/asset/police/astonpoliz/astonpoliz-webfont.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+
 /** Variable Utile pour eviter de changer a chaque fois les couleur ou valeur **/
 :root{
     --violet-fond : #A900EB;
+    --white: #fff;
 
 }
-
 body{
-    margin:0
-
+    margin:0;
+    font-family: astonpolizregular;
+    font-size: 1.5em;
 }
 
 
@@ -24,4 +43,43 @@ header img{
 #profilPicture {
     display: flex;
     justify-content: flex-end;
+}
+
+/** Page d'accueil **/
+.navBtn,#categ{
+    
+    display: flex;
+    margin-top: 1em;
+    justify-content: space-evenly;
+}
+
+#categ{
+    flex-direction: column;
+    align-items: center;
+}
+
+.btnCreate{
+   border-radius: 15px;
+   border: 3px solid var(--violet-fond);
+   padding: 1em;
+   margin: auto;
+   margin-bottom:1em ;
+   background-color: var(--violet-fond);
+   color: var(--white);
+   transition: background-color 0.2s ease-in-out;
+
+}
+
+.btnCreate:hover{
+    background-color: var(--white);
+    color: var(--violet-fond);
+}
+
+
+.navBtn a{
+    text-decoration: none;
+}
+
+.hidden{
+    display: none;
 }
